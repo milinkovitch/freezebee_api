@@ -1,9 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "g7ojZqZ94MyuAoFj2ZLmfPVdRJalZ0nEUtRzy4mdIGMJEQ5ZDjKA3nna0ahpee+aKlYvK1Cpl695WDx+HEroVA==",
+  "dgSpecHash": "YaT1TuQW1TjGKcPAtYO6YEQsRwTXNeMuiTvY29C2bVRWHBdeH/qevX+LYayHNUaB52KJVb2ek+C0ryWph0pTIQ==",
   "success": true,
   "projectFilePath": "C:\\Users\\julie\\Documents\\EXIA\\A5\\CYBER\\freezebee_api\\freezebee_api.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\julie\\.nuget\\packages\\bcrypt.net-next\\4.0.2\\bcrypt.net-next.4.0.2.nupkg.sha512",
     "C:\\Users\\julie\\.nuget\\packages\\humanizer.core\\2.8.26\\humanizer.core.2.8.26.nupkg.sha512",
     "C:\\Users\\julie\\.nuget\\packages\\microsoft.aspnet.cors\\5.0.0\\microsoft.aspnet.cors.5.0.0.nupkg.sha512",
     "C:\\Users\\julie\\.nuget\\packages\\microsoft.aspnet.webapi.client\\5.2.7\\microsoft.aspnet.webapi.client.5.2.7.nupkg.sha512",

@@ -4,18 +4,17 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.OpenApi.Models;
 using Microsoft.EntityFrameworkCore;
 using freezebee_api.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using freezebee_api.Services;
+using Microsoft.AspNetCore.Http;
+using freezebee_api.Middlewares;
 
 namespace freezebee_api
 {
@@ -32,13 +31,14 @@ namespace freezebee_api
         public void ConfigureServices(IServiceCollection services)
         {
             string connectedString = Configuration.GetConnectionString("Freezebee");
-            var key = Encoding.ASCII.GetBytes("secret");
+            var key = Encoding.ASCII.GetBytes(TokenService.Secret);
 
             services.AddDbContext<FreezebeeContext>(options =>
             {
                 options.UseSqlServer(connectedString);
                 options.EnableSensitiveDataLogging();
             });
+
             services.AddCors(options =>
             {
                 options.AddDefaultPolicy(
@@ -93,6 +93,9 @@ namespace freezebee_api
                 //     app.UseSwagger();
                 //     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "freezebee_api v1"));
             }
+            app.UseMiddleware<EncryptMiddleware>();
+
+            app.UseAuthentication();
 
             app.UseHttpsRedirection();
 
