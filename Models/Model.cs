@@ -5,18 +5,13 @@ namespace freezebee_api.Models
 {
     public class Model : IModel
     {
-        public Model()
-        {
-            this.Ingredients = new HashSet<Ingredient>();
-
-        }
         public Guid Id { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public int Price { get; set; }
         public string Range { get; set; }
 
-        public virtual ICollection<Ingredient> Ingredients { get; set; }
+        public ICollection<IngredientModel> IngredientModels { get; set; }
     }
 
     public interface IModel : IEntityBase
@@ -34,6 +29,6 @@ namespace freezebee_api.Models
         public int Price { get; set; }
         public string Range { get; set; }
         public Guid Id { get; set; }
-        public Guid[] Ingredients { get; set; }
+        public ICollection<Guid> Ingredients { get; set; }
     }
 }

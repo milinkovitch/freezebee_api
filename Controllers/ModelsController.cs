@@ -22,7 +22,7 @@ namespace freezebee_api.Controllers
         }
 
         // GET: api/Models
-        [Authorize]
+        [AllowAnonymous]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Model>>> GetModels(string search, string ingredient)
         {
@@ -38,7 +38,7 @@ namespace freezebee_api.Controllers
                 //query = query.Where(e => e.Ingredients.Contains.(ingredient));
             }
 
-            return await query.Include(m => m.Ingredients).ToListAsync();
+            return await query.Include(m => m.IngredientModels).ThenInclude(im => im.Ingredient).AsNoTracking().ToListAsync();
         }
 
         // GET: api/Models/5
@@ -65,7 +65,7 @@ namespace freezebee_api.Controllers
                 return BadRequest();
             }
 
-            Model model = await _context.Models.Include(m => m.Ingredients).FirstOrDefaultAsync(i => i.Id == id);
+            Model model = await _context.Models.Include(m => m.IngredientModels).FirstOrDefaultAsync(m => m.Id == id);
             model.Name = mc.Name;
             model.Description = mc.Description;
             model.Range = mc.Range;
@@ -74,18 +74,24 @@ namespace freezebee_api.Controllers
             _context.Entry(model).State = EntityState.Modified;
 
             ICollection<Ingredient> selectedIngredients = await _context.Ingredients.Where(i => mc.Ingredients.Contains(i.Id)).ToListAsync();
-            ICollection<Ingredient> existingIngredients = model.Ingredients;
-            ICollection<Ingredient> toAdd = selectedIngredients.Except(existingIngredients).ToList();
-            ICollection<Ingredient> toRemove = existingIngredients.Except(selectedIngredients).ToList();
+            ICollection<IngredientModel> existingIM = model.IngredientModels;
 
-            foreach (Ingredient ingredient in toAdd)
+            foreach (Ingredient i in selectedIngredients)
             {
-                model.Ingredients.Add(ingredient);
-
+                IngredientModel selectedIM = existingIM.Where(im => im.IngredientId == i.Id && model.Id == im.ModelId).FirstOrDefault();
+                if (selectedIM == null)
+                {
+                    model.IngredientModels.Add(new IngredientModel
+                    { ModelId = model.Id, IngredientId = i.Id });
+                }
             }
-            foreach (Ingredient ingredient in toRemove)
+
+            foreach (IngredientModel im in existingIM)
             {
-                model.Ingredients.Remove(ingredient);
+                if (!mc.Ingredients.Contains(im.IngredientId))
+                {
+                    model.IngredientModels.Remove(im);
+                }
             }
 
             try
@@ -100,7 +106,7 @@ namespace freezebee_api.Controllers
                     return NotFound();
                 }
                 else
-                {
+                {   
                     throw;
                 }
             }
@@ -120,14 +126,17 @@ namespace freezebee_api.Controllers
                 Price = mc.Price
             };
 
+            IList<IngredientModel> IngredientModels = new List<IngredientModel>();
             if (mc.Ingredients != null)
             {
                 List<Ingredient> ingredients = await _context.Ingredients.Where(i => mc.Ingredients.Contains(i.Id)).ToListAsync();
                 foreach (Ingredient ingredient in ingredients)
                 {
-                    model.Ingredients.Add(ingredient);
+                    IngredientModel im = new IngredientModel { IngredientId = ingredient.Id };
+                    IngredientModels.Add(im);
                 }
             }
+            model.IngredientModels = IngredientModels;
 
             _context.Models.Add(model);
             await _context.SaveChangesAsync();

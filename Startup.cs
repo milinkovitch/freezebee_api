@@ -14,6 +14,8 @@ using Microsoft.OpenApi.Models;
 using Microsoft.EntityFrameworkCore;
 using freezebee_api.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace freezebee_api
 {
@@ -30,6 +32,7 @@ namespace freezebee_api
         public void ConfigureServices(IServiceCollection services)
         {
             string connectedString = Configuration.GetConnectionString("Freezebee");
+            var key = Encoding.ASCII.GetBytes("secret");
 
             services.AddDbContext<FreezebeeContext>(options =>
             {
@@ -49,14 +52,31 @@ namespace freezebee_api
             });
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(opt =>
-                {
-                    opt.Audience = Configuration["AAD:ResourceId"];
-                    opt.Authority = $"{Configuration["AAD:Instance"]}{Configuration["AAD:TenantId"]}";
-                });
+                  .AddJwtBearer(options =>
+                  {
+                      options.RequireHttpsMetadata = false;
+                      options.SaveToken = true;
+                      options.TokenValidationParameters = new TokenValidationParameters
+                      {
+                          ValidateIssuerSigningKey = true,
+                          IssuerSigningKey = new SymmetricSecurityKey(key),
+                          ValidateIssuer = false,
+                          ValidateAudience = false,
+                          ClockSkew = TimeSpan.Zero
+                      };
+                      options.Events = new JwtBearerEvents
+                      {
+                          OnMessageReceived = context =>
+                          {
+                              context.Token = context.Request.Cookies["freezebee_session"];
+                              return Task.CompletedTask;
+                          }
+                      };
+                  });
+
 
             services.AddControllers()
-                .AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+                    .AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
 
             // services.AddSwaggerGen(c =>
             // {
