@@ -31,12 +31,17 @@ namespace freezebee_api
         public void ConfigureServices(IServiceCollection services)
         {
             string connectedString = Configuration.GetConnectionString("Freezebee");
+            var server = Configuration["DBServer"] ?? "10.10.40.13";
+            var port = Configuration["DBPort"] ?? "1433";
+            var username = Configuration["DBUsername"] ?? "root";
+            var password = Configuration["DBPassword"] ?? "1AH5Dk33c7bWERl";
+            var database = Configuration["DBDatabase"] ?? "Freezebee";
+
             var key = Encoding.ASCII.GetBytes(TokenService.Secret);
 
             services.AddDbContext<FreezebeeContext>(options =>
             {
-                options.UseSqlServer(connectedString);
-                options.EnableSensitiveDataLogging();
+                options.UseSqlServer($"Server={server};Database={database}; User Id={username}; Password={password};");
             });
 
             services.AddCors(options =>
@@ -44,7 +49,7 @@ namespace freezebee_api
                 options.AddDefaultPolicy(
                 builder =>
                 {
-                    builder.WithOrigins("http://localhost:3000")
+                    builder.WithOrigins("http://10.10.40.16:3000")
                     .AllowAnyHeader()
                     .AllowAnyMethod()
                     .AllowCredentials();
