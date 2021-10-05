@@ -49,7 +49,7 @@ namespace freezebee_api
                 options.AddDefaultPolicy(
                 builder =>
                 {
-                    builder.WithOrigins("http://10.10.40.16:3000")
+                    builder.WithOrigins("http://10.10.40.16:3000", "http://localhost:3000")
                     .AllowAnyHeader()
                     .AllowAnyMethod()
                     .AllowCredentials();
